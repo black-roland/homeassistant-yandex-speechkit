@@ -15,13 +15,6 @@ PLATFORMS = [Platform.STT]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a config entry."""
 
-    # FIXME: Singletone? Yandex, WTF?
-    configure_credentials(
-        yandex_credentials=creds.YandexCredentials(
-            api_key=entry.data[CONF_API_KEY],
-        )
-    )
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
