@@ -1,0 +1,13 @@
+{
+  "domain": "yandex_speechkit",
+  "name": "Yandex SpeechKit",
+  "codeowners": ["@black-roland"],
+  "config_flow": true,
+  "documentation": "https://github.com/black-roland/homeassistant-yandex-speechkit#README",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/black-roland/homeassistant-yandex-speechkit/issues",
+  "loggers": ["yandex_speechkit"],
+  "requirements": ["yandex-speechkit==1.5.0"],
+  "version": "0.1.0"
+}
