@@ -10,4 +10,22 @@ DOMAIN = "yandex_speechkit"
 LOGGER = logging.getLogger(__package__)
 
 # https://yandex.cloud/ru/docs/speechkit/stt/models
-STT_LANGUAGES = ["ru-RU"]
+STT_LANGUAGES = [
+  "auto",
+  "de-DE",
+  "en-US",
+  "es-ES",
+  "fi-FI",
+  "fr-FR",
+  "he-HE",
+  "it-IT",
+  "kk-KZ",
+  "nl-NL",
+  "pl-PL",
+  "pt-PT",
+  "pt-BR",
+  "ru-RU",
+  "sv-SE",
+  "tr-TR",
+  "uz-UZ",
+]

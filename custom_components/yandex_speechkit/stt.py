@@ -97,7 +97,6 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
         """Process an audio stream to STT service."""
 
         def request_generator(sync_stream):
-            # Задайте настройки распознавания.
             recognize_options = stt_pb2.StreamingOptions(
                 recognition_model=stt_pb2.RecognitionModelOptions(
                     audio_format=stt_pb2.AudioFormatOptions(
@@ -114,8 +113,7 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
                     ),
                     language_restriction=stt_pb2.LanguageRestrictionOptions(
                         restriction_type=stt_pb2.LanguageRestrictionOptions.WHITELIST,
-                        # FIXME: metadata.language
-                        language_code=['ru-RU']
+                        language_code=[metadata.language]
                     ),
                     audio_processing_type=stt_pb2.RecognitionModelOptions.REAL_TIME
                 )
@@ -127,7 +125,6 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
             LOGGER.debug("Speech recognition...")
             # Распознайте речь по порциям.
             for audio_bytes in sync_stream:
-                LOGGER.debug("Sending the next audio chunk...")
                 yield stt_pb2.StreamingRequest(chunk=stt_pb2.AudioChunk(data=audio_bytes))
 
         LOGGER.debug("Processing audio stream")
