@@ -4,8 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from typing import AsyncGenerator, AsyncIterable, Generator
+from typing import AsyncGenerator, AsyncIterable
 import grpc
+from grpc import aio
 
 from homeassistant.components.stt import (
     AudioBitRates,
@@ -25,12 +26,6 @@ import yandex.cloud.ai.stt.v3.stt_pb2 as stt_pb2
 import yandex.cloud.ai.stt.v3.stt_service_pb2_grpc as stt_service_pb2_grpc
 
 from .const import STT_LANGUAGES, LOGGER
-
-CHANNELS = 1
-RATE = 8000
-CHUNK = 4096
-RECORD_SECONDS = 30
-WAVE_OUTPUT_FILENAME = "audio.wav"
 
 
 async def async_setup_entry(
@@ -96,7 +91,7 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
     ) -> SpeechResult:
         """Process an audio stream to STT service."""
 
-        def request_generator(sync_stream):
+        async def request_generator() -> AsyncGenerator[stt_pb2.StreamingRequest, None]:
             recognize_options = stt_pb2.StreamingOptions(
                 recognition_model=stt_pb2.RecognitionModelOptions(
                     audio_format=stt_pb2.AudioFormatOptions(
@@ -106,9 +101,10 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
                             audio_channel_count=1
                         )
                     ),
+                    # TODO: Make configurable?
                     text_normalization=stt_pb2.TextNormalizationOptions(
-                        text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_ENABLED,
-                        profanity_filter=True,
+                        text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_DISABLED,
+                        profanity_filter=False,
                         literature_text=False
                     ),
                     language_restriction=stt_pb2.LanguageRestrictionOptions(
@@ -122,49 +118,33 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
             LOGGER.debug("Sending the message with recognition params...")
             yield stt_pb2.StreamingRequest(session_options=recognize_options)
 
-            LOGGER.debug("Speech recognition...")
             # Распознайте речь по порциям.
-            for audio_bytes in sync_stream:
+            async for audio_bytes in stream:
                 yield stt_pb2.StreamingRequest(chunk=stt_pb2.AudioChunk(data=audio_bytes))
 
-        LOGGER.debug("Processing audio stream")
         # Установите соединение с сервером.
         cred = grpc.ssl_channel_credentials()
-        channel = grpc.secure_channel("stt.api.cloud.yandex.net:443", cred)
-        stub = stt_service_pb2_grpc.RecognizerStub(channel)
+        # channel = grpc.secure_channel("stt.api.cloud.yandex.net:443", cred)
+        # stub = stt_service_pb2_grpc.RecognizerStub(channel)
+        async with aio.secure_channel("stt.api.cloud.yandex.net:443", cred) as channel:
+            stub = stt_service_pb2_grpc.RecognizerStub(channel)
 
-        api_key = self._config_entry.data["api_key"]
+            api_key = self._config_entry.data["api_key"]
+            responses = stub.RecognizeStreaming(
+                request_generator(),
+                metadata=(("authorization", f"Api-Key {api_key}"),),
+            )
 
-        # Отправьте данные для распознавания.
-        print('1')
+            alternatives = []
+            try:
+                async for response in responses:
+                    if response.WhichOneof('Event') != 'final':
+                        continue
+                    alternatives += [a.text for a in response.final.alternatives]
+            except grpc.RpcError as err:
+                LOGGER.error("Error occured during speech recognition: %s", err)
+                return SpeechResult(None, SpeechResultState.ERROR)
 
-        sync_stream = []
-        async for audio_bytes in stream:
-            sync_stream.append(audio_bytes)
-
-        it = stub.RecognizeStreaming(
-            request_generator(sync_stream),
-            metadata=(("authorization", f"Api-Key {api_key}"),),
-        )
-        print('2')
-
-        # Обработайте ответы сервера и выведите результат в консоль.
-        alternatives = None
-        try:
-            for r in it:
-                print('3')
-                event_type = r.WhichOneof('Event')
-                if event_type == 'partial' and len(r.partial.alternatives) > 0:
-                    alternatives = [a.text for a in r.partial.alternatives]
-                if event_type == 'final':
-                    alternatives = [a.text for a in r.final.alternatives]
-                if event_type == 'final_refinement':
-                    alternatives = [a.text for a in r.final_refinement.normalized_text.alternatives]
-                LOGGER.debug(f'type={event_type}, alternatives={alternatives}')
-        except Exception as err:
-            LOGGER.error("Error occured during: %s", err)
-            return SpeechResult(None, SpeechResultState.ERROR)
-
-        if alternatives is None:
-            return SpeechResult(None, SpeechResultState.ERROR)
-        return SpeechResult("".join(alternatives), SpeechResultState.SUCCESS)
+            if alternatives is None:
+                return SpeechResult(None, SpeechResultState.ERROR)
+            return SpeechResult(" ".join(alternatives), SpeechResultState.SUCCESS)
