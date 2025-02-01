@@ -5,9 +5,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from speechkit import configure_credentials, creds
 
 PLATFORMS = [Platform.STT]
 
