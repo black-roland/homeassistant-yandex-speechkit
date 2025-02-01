@@ -5,9 +5,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 from typing import AsyncGenerator, AsyncIterable
-import grpc
-from grpc import aio
 
+import grpc
+import yandex.cloud.ai.stt.v3.stt_pb2 as stt_pb2
+import yandex.cloud.ai.stt.v3.stt_service_pb2_grpc as stt_service_pb2_grpc
+from grpc import aio
 from homeassistant.components.stt import (
     AudioBitRates,
     AudioChannels,
@@ -21,11 +23,10 @@ from homeassistant.components.stt import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-import yandex.cloud.ai.stt.v3.stt_pb2 as stt_pb2
-import yandex.cloud.ai.stt.v3.stt_service_pb2_grpc as stt_service_pb2_grpc
 
-from .const import STT_LANGUAGES, LOGGER
+from .const import DOMAIN, LOGGER, STT_LANGUAGES
 
 
 async def async_setup_entry(
@@ -52,14 +53,12 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
     @property
     def supported_formats(self) -> list[AudioFormats]:
         """Return a list of supported formats."""
-        # TODO: add ogg support
-        return [AudioFormats.WAV]
+        return [AudioFormats.WAV, AudioFormats.OGG]
 
     @property
     def supported_codecs(self) -> list[AudioCodecs]:
         """Return a list of supported codecs."""
-        # TODO: add opus support
-        return [AudioCodecs.PCM]
+        return [AudioCodecs.PCM, AudioCodecs.OPUS]
 
     @property
     def supported_bit_rates(self) -> list[AudioBitRates]:
@@ -94,24 +93,32 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
         async def request_generator() -> AsyncGenerator[stt_pb2.StreamingRequest, None]:
             recognize_options = stt_pb2.StreamingOptions(
                 recognition_model=stt_pb2.RecognitionModelOptions(
-                    audio_format=stt_pb2.AudioFormatOptions(
-                        raw_audio=stt_pb2.RawAudio(
-                            audio_encoding=stt_pb2.RawAudio.LINEAR16_PCM,
-                            sample_rate_hertz=metadata.sample_rate,
-                            audio_channel_count=1
+                    audio_format=(
+                        stt_pb2.AudioFormatOptions(
+                            container_audio=stt_pb2.ContainerAudio(
+                                container_audio_type=stt_pb2.ContainerAudio.OGG_OPUS,
+                            )
+                        )
+                        if metadata.codec == AudioCodecs.OPUS
+                        else stt_pb2.AudioFormatOptions(
+                            raw_audio=stt_pb2.RawAudio(
+                                audio_encoding=stt_pb2.RawAudio.LINEAR16_PCM,
+                                sample_rate_hertz=metadata.sample_rate,
+                                audio_channel_count=1,
+                            )
                         )
                     ),
                     # TODO: Make configurable?
                     text_normalization=stt_pb2.TextNormalizationOptions(
                         text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_DISABLED,
                         profanity_filter=False,
-                        literature_text=False
+                        literature_text=False,
                     ),
                     language_restriction=stt_pb2.LanguageRestrictionOptions(
                         restriction_type=stt_pb2.LanguageRestrictionOptions.WHITELIST,
-                        language_code=[metadata.language]
+                        language_code=[metadata.language],
                     ),
-                    audio_processing_type=stt_pb2.RecognitionModelOptions.REAL_TIME
+                    audio_processing_type=stt_pb2.RecognitionModelOptions.REAL_TIME,
                 )
             )
 
@@ -120,12 +127,12 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
 
             # Распознайте речь по порциям.
             async for audio_bytes in stream:
-                yield stt_pb2.StreamingRequest(chunk=stt_pb2.AudioChunk(data=audio_bytes))
+                yield stt_pb2.StreamingRequest(
+                    chunk=stt_pb2.AudioChunk(data=audio_bytes)
+                )
 
         # Установите соединение с сервером.
         cred = grpc.ssl_channel_credentials()
-        # channel = grpc.secure_channel("stt.api.cloud.yandex.net:443", cred)
-        # stub = stt_service_pb2_grpc.RecognizerStub(channel)
         async with aio.secure_channel("stt.api.cloud.yandex.net:443", cred) as channel:
             stub = stt_service_pb2_grpc.RecognizerStub(channel)
 
@@ -138,7 +145,7 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
             alternatives = []
             try:
                 async for response in responses:
-                    if response.WhichOneof('Event') != 'final':
+                    if response.WhichOneof("Event") != "final":
                         continue
                     alternatives += [a.text for a in response.final.alternatives]
             except grpc.RpcError as err:
