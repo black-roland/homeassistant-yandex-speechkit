@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/black-roland/homeassistant-yandex-speechkit/issues",
   "loggers": ["yandex_speechkit"],
   "requirements": ["yandexcloud==0.295.0"],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
