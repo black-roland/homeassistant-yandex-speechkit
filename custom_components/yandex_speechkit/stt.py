@@ -43,6 +43,15 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize the entity."""
+
+        self._attr_unique_id = f"{config_entry.entry_id}"
+        self._attr_name = config_entry.title
+        self._attr_device_info = dr.DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)},
+            manufacturer="Yandex",
+            model="Cloud",
+            entry_type=dr.DeviceEntryType.SERVICE,
+        )
         self._config_entry = config_entry
 
     @property
