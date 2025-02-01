@@ -1,0 +1,7 @@
+{
+    "name": "Yandex SpeechKit",
+    "render_readme": true,
+    "homeassistant": "2024.11.0b0",
+    "zip_release": true,
+    "filename": "yandex_speechkit.zip"
+}
