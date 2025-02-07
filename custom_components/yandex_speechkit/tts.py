@@ -21,7 +21,8 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from custom_components.yandex_speechkit.const import (
-    CONF_VOICE,
+    CONF_TTS_UNSAFE,
+    CONF_TTS_VOICE,
     DEFAULT_LANG,
     DEFAULT_VOICE,
     DOMAIN,
@@ -67,26 +68,35 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
     @property
     def supported_options(self):
         """Return a list of supported options like voice, emotions."""
-        return [CONF_VOICE]
+        return [CONF_TTS_VOICE]
 
     async def async_get_tts_audio(
         self, message: str, language: str, options: dict[str, Any]
     ) -> TtsAudioType:
         """Get TTS audio from Yandex SpeechKit."""
         LOGGER.debug("Starting TTS synthesis for message: %s", message)
+
+        voice = self._config_entry.options.get(CONF_TTS_VOICE, DEFAULT_VOICE)
+        unsafe_mode = self._config_entry.options.get(CONF_TTS_UNSAFE, False)
+
+        if len(message) > 249 and not unsafe_mode:
+            LOGGER.info(
+                "Message is too long (%s characters) and will be truncated",
+                len(message),
+            )
+
         request = tts_pb2.UtteranceSynthesisRequest(
-            text=message,
+            text=message if unsafe_mode else message[:249],
             output_audio_spec=tts_pb2.AudioFormatOptions(
                 container_audio=tts_pb2.ContainerAudio(
                     container_audio_type=tts_pb2.ContainerAudio.WAV
                 )
             ),
             hints=[
-                tts_pb2.Hints(
-                    voice=self._config_entry.options.get(CONF_VOICE, DEFAULT_VOICE)
-                ),
+                tts_pb2.Hints(voice=voice),
             ],
             loudness_normalization_type=tts_pb2.UtteranceSynthesisRequest.LUFS,
+            unsafe_mode=unsafe_mode,
         )
 
         cred = grpc.ssl_channel_credentials()

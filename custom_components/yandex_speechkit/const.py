@@ -40,7 +40,8 @@ TTS_LANGUAGES = [
     "uz-UZ",
 ]
 
-CONF_VOICE = "voice"
+CONF_TTS_VOICE = "tts_voice"
+CONF_TTS_UNSAFE = "tts_unsafe"
 
 DEFAULT_LANG = "ru-RU"
 DEFAULT_VOICE = "marina"

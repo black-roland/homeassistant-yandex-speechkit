@@ -17,7 +17,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_API_KEY
 
-from .const import CONF_VOICE, DEFAULT_VOICE, DOMAIN
+from .const import CONF_TTS_UNSAFE, CONF_TTS_VOICE, DEFAULT_VOICE, DOMAIN
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -82,7 +82,8 @@ class YandexSpeechKitOptionsFlow(OptionsFlow):
         return self.add_suggested_values_to_schema(
             vol.Schema(
                 {
-                    vol.Optional(CONF_VOICE, default=DEFAULT_VOICE): str,
+                    vol.Optional(CONF_TTS_VOICE, default=DEFAULT_VOICE): str,
+                    vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
                 }
             ),
             self.config_entry.options,
