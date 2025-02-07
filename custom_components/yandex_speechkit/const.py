@@ -11,21 +11,36 @@ LOGGER = logging.getLogger(__package__)
 
 # https://yandex.cloud/ru/docs/speechkit/stt/models
 STT_LANGUAGES = [
-  "auto",
-  "de-DE",
-  "en-US",
-  "es-ES",
-  "fi-FI",
-  "fr-FR",
-  "he-HE",
-  "it-IT",
-  "kk-KZ",
-  "nl-NL",
-  "pl-PL",
-  "pt-PT",
-  "pt-BR",
-  "ru-RU",
-  "sv-SE",
-  "tr-TR",
-  "uz-UZ",
+    "auto",
+    "de-DE",
+    "en-US",
+    "es-ES",
+    "fi-FI",
+    "fr-FR",
+    "he-HE",
+    "it-IT",
+    "kk-KZ",
+    "nl-NL",
+    "pl-PL",
+    "pt-PT",
+    "pt-BR",
+    "ru-RU",
+    "sv-SE",
+    "tr-TR",
+    "uz-UZ",
 ]
+
+# https://yandex.cloud/ru/docs/speechkit/tts/voices
+TTS_LANGUAGES = [
+    "de-DE",
+    "en-US",
+    "he-IL",
+    "kk-KK",
+    "ru-RU",
+    "uz-UZ",
+]
+
+CONF_VOICE = "voice"
+
+DEFAULT_LANG = "ru-RU"
+DEFAULT_VOICE = "marina"
