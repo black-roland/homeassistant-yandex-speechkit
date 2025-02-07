@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
+from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -16,8 +17,23 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import CONF_API_KEY
+from homeassistant.helpers.selector import (
+    EntitySelector,
+    EntitySelectorConfig,
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
-from .const import CONF_TTS_UNSAFE, CONF_TTS_VOICE, DEFAULT_VOICE, DOMAIN
+from .const import (
+    CONF_PROXY_MEDIA_TYPE,
+    CONF_PROXY_SPEAKER,
+    CONF_TTS_UNSAFE,
+    CONF_TTS_VOICE,
+    DEFAULT_VOICE,
+    DOMAIN,
+)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -84,6 +100,15 @@ class YandexSpeechKitOptionsFlow(OptionsFlow):
                 {
                     vol.Optional(CONF_TTS_VOICE, default=DEFAULT_VOICE): str,
                     vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
+                    vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
+                        EntitySelectorConfig(domain=[MEDIA_DOMAIN])
+                    ),
+                    vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
+                        SelectSelectorConfig(
+                            mode=SelectSelectorMode.DROPDOWN,
+                            options=["tts", "text", "dialog"],
+                        )
+                    ),
                 }
             ),
             self.config_entry.options,

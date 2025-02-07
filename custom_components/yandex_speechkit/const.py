@@ -42,6 +42,8 @@ TTS_LANGUAGES = [
 
 CONF_TTS_VOICE = "tts_voice"
 CONF_TTS_UNSAFE = "tts_unsafe"
+CONF_PROXY_SPEAKER = "proxy_speaker"
+CONF_PROXY_MEDIA_TYPE = "proxy_media_type"
 
 DEFAULT_LANG = "ru-RU"
 DEFAULT_VOICE = "marina"

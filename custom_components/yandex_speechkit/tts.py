@@ -7,20 +7,29 @@
 from __future__ import annotations
 
 import io
+import os
 from typing import Any
 
 import grpc
 import yandex.cloud.ai.tts.v3.tts_pb2 as tts_pb2
 import yandex.cloud.ai.tts.v3.tts_service_pb2_grpc as tts_service_pb2_grpc
 from grpc import aio
+from homeassistant.components.media_player.const import (
+    ATTR_MEDIA_CONTENT_ID,
+    ATTR_MEDIA_CONTENT_TYPE,
+)
+from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
+from homeassistant.components.media_player.const import SERVICE_PLAY_MEDIA
 from homeassistant.components.tts import TextToSpeechEntity, TtsAudioType
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY
+from homeassistant.const import ATTR_ENTITY_ID, CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from custom_components.yandex_speechkit.const import (
+from .const import (
+    CONF_PROXY_MEDIA_TYPE,
+    CONF_PROXY_SPEAKER,
     CONF_TTS_UNSAFE,
     CONF_TTS_VOICE,
     DEFAULT_LANG,
@@ -37,7 +46,12 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Yandex SpeechKit text-to-speech."""
-    async_add_entities([YandexSpeechKitTTSEntity(config_entry)])
+    entities: list[TextToSpeechEntity] = [YandexSpeechKitTTSEntity(config_entry)]
+
+    if config_entry.options.get(CONF_PROXY_SPEAKER):
+        entities.append(YandexStationTTSProxyEntity(hass, config_entry))
+
+    async_add_entities(entities)
 
 
 class YandexSpeechKitTTSEntity(TextToSpeechEntity):
@@ -53,6 +67,7 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
             model="Cloud",
             entry_type=dr.DeviceEntryType.SERVICE,
         )
+
         self._config_entry = config_entry
 
     @property
@@ -64,11 +79,6 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
     def default_language(self):
         """Return the default language."""
         return DEFAULT_LANG
-
-    @property
-    def supported_options(self):
-        """Return a list of supported options like voice, emotions."""
-        return [CONF_TTS_VOICE]
 
     async def async_get_tts_audio(
         self, message: str, language: str, options: dict[str, Any]
@@ -126,3 +136,67 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
             except grpc.RpcError as err:
                 LOGGER.error("Error occurred during Yandex SpeechKit TTS call: %s", err)
                 return None, None
+
+
+class YandexStationTTSProxyEntity(TextToSpeechEntity):
+    """The Yandex.Station TTS proxy entity."""
+
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+        self._attr_unique_id = f"{config_entry.entry_id}_yandex_station_tts_proxy"
+        self._attr_name = "Yandex.Station proxy"
+        self._attr_device_info = dr.DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)},
+            manufacturer="AlexxIT",
+            model="Yandex.Station",
+            entry_type=dr.DeviceEntryType.SERVICE,
+        )
+
+        self._hass = hass
+        self._config_entry = config_entry
+
+    @property
+    def supported_languages(self):
+        """Return a list of supported languages."""
+        return TTS_LANGUAGES
+
+    @property
+    def default_language(self):
+        """Return the default language."""
+        return DEFAULT_LANG
+
+    async def async_get_tts_audio(
+        self, message: str, language: str, options: dict[str, Any]
+    ) -> TtsAudioType:
+        """Send text to the configured Yandex.Station."""
+        if not self._config_entry.options.get(CONF_PROXY_SPEAKER):
+            LOGGER.error("No speaker configured for Yandex.Station TTS proxy")
+            return (None, None)
+
+        LOGGER.debug("Proxying TTS request to Yandex.Station...")
+        try:
+            data = {
+                ATTR_MEDIA_CONTENT_ID: message,
+                ATTR_MEDIA_CONTENT_TYPE: self._config_entry.options.get(
+                    CONF_PROXY_MEDIA_TYPE, "tts"
+                ),
+                ATTR_ENTITY_ID: self._config_entry.options.get(CONF_PROXY_SPEAKER),
+            }
+            await self._hass.services.async_call(
+                MEDIA_DOMAIN, SERVICE_PLAY_MEDIA, data, blocking=True
+            )
+        except Exception as e:
+            LOGGER.error("Error proxying TTS request to Yandex.Station: %s", e)
+            return (None, None)
+
+        def _read_empty_wav() -> TtsAudioType:
+            try:
+                LOGGER.debug("Returning an empty.wav...")
+                filename = os.path.join(os.path.dirname(__file__), "empty.wav")
+                with open(filename, "rb") as file:
+                    empty = file.read()
+                    return ("wav", empty)
+            except OSError:
+                LOGGER.error("Error reading empty.wav")
+                return (None, None)
+
+        return await self.hass.async_add_executor_job(_read_empty_wav)
