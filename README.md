@@ -6,9 +6,9 @@
 
 [![Add custom repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=black-roland&repository=homeassistant-yandex-speechkit&category=integration) [![Set up Yandex SpeechKit integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=yandex_speechkit)
 
-⚠️ [Work in progress](https://www.youtube.com/playlist?list=PLtVBPjV2ejLHOKhZIs6F13MOTMNHW8qRC). Not all functionality is available yet.
-
 This integration brings Yandex SpeechKit's powerful speech-to-text (STT) and text-to-speech (TTS) capabilities to Home Assistant. With support for over 15 languages, high accuracy, and low latency, Yandex SpeechKit enables you to create a unique voice assistant experience in your smart home.
+
+SpeechKit is a cloud service. Fees are charged according to the Yandex Cloud tariffs.
 
 ## Features
 
@@ -22,7 +22,7 @@ This integration brings Yandex SpeechKit's powerful speech-to-text (STT) and tex
 
 - **Seamless Integration:**
   - Compatible with [YandexGPT](https://github.com/black-roland/homeassistant-yandexgpt) for advanced conversational AI.
-  - Provides TTS capability through the YandexStation integration.
+  - Provides TTS capability through the Yandex.Station integration.
 
 ## Prerequisites
 
@@ -64,6 +64,8 @@ A huge thank you to everyone who has supported this project! Your contributions 
 
 Эта интеграция добавляет в Home Assistant мощные возможности распознавания (STT) и синтеза речи (TTS) от Yandex SpeechKit. С поддержкой более 15 языков, высокой точностью и минимальной задержкой, Yandex SpeechKit позволяет создать уникального голосового ассистента для вашего умного дома.
 
+SpeechKit — это облачный сервис, плата за который взимается в соответствии с тарифами Yandex Cloud. При первой регистрации [можно получить стартовый грант](https://yandex.cloud/ru/docs/getting-started/usage-grant).
+
 ## Возможности
 
 - **Распознавание речи (STT):**
@@ -76,7 +78,7 @@ A huge thank you to everyone who has supported this project! Your contributions 
 
 - **Бесшовная интеграция:**
   - Может работать вместе с [YandexGPT](https://github.com/black-roland/homeassistant-yandexgpt) для создания продвинутого ассистента.
-  - Предоставляет функцию преобразования текста в речь (TTS) через интеграцию с YandexStation.
+  - Предоставляет функцию преобразования текста в речь (TTS) через интеграцию с Yandex.Station.
 
 ## Подготовка
 
