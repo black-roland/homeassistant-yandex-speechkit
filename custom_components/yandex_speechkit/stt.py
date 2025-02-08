@@ -100,67 +100,70 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
         """Process an audio stream to STT service."""
 
         async def request_generator() -> AsyncGenerator[stt_pb2.StreamingRequest, None]:
-            recognize_options = stt_pb2.StreamingOptions(
-                recognition_model=stt_pb2.RecognitionModelOptions(
-                    audio_format=(
-                        stt_pb2.AudioFormatOptions(
-                            container_audio=stt_pb2.ContainerAudio(
-                                container_audio_type=stt_pb2.ContainerAudio.OGG_OPUS,
-                            )
-                        )
-                        if metadata.codec == AudioCodecs.OPUS
-                        else stt_pb2.AudioFormatOptions(
-                            raw_audio=stt_pb2.RawAudio(
-                                audio_encoding=stt_pb2.RawAudio.LINEAR16_PCM,
-                                sample_rate_hertz=metadata.sample_rate,
-                                audio_channel_count=1,
-                            )
-                        )
-                    ),
-                    # TODO: Make configurable?
-                    text_normalization=stt_pb2.TextNormalizationOptions(
-                        text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_DISABLED,
-                        profanity_filter=False,
-                        literature_text=False,
-                    ),
-                    language_restriction=stt_pb2.LanguageRestrictionOptions(
-                        restriction_type=stt_pb2.LanguageRestrictionOptions.WHITELIST,
-                        language_code=[metadata.language],
-                    ),
-                    audio_processing_type=stt_pb2.RecognitionModelOptions.REAL_TIME,
-                )
-            )
-
+            recognize_options = self._get_recognition_options(metadata)
             LOGGER.debug("Sending the message with recognition params...")
             yield stt_pb2.StreamingRequest(session_options=recognize_options)
 
-            # Распознайте речь по порциям.
             async for audio_bytes in stream:
                 yield stt_pb2.StreamingRequest(
                     chunk=stt_pb2.AudioChunk(data=audio_bytes)
                 )
 
-        # Установите соединение с сервером.
-        cred = grpc.ssl_channel_credentials()
-        async with aio.secure_channel("stt.api.cloud.yandex.net:443", cred) as channel:
-            stub = stt_service_pb2_grpc.RecognizerStub(channel)
-
-            api_key = self._config_entry.data["api_key"]
+        async def recognize_stream(stub, api_key):
             responses = stub.RecognizeStreaming(
                 request_generator(),
                 metadata=(("authorization", f"Api-Key {api_key}"),),
             )
-
             alternatives = []
+            async for response in responses:
+                if response.WhichOneof("Event") != "final":
+                    continue
+                alternatives += [a.text for a in response.final.alternatives]
+            return alternatives
+
+        cred = grpc.ssl_channel_credentials()
+        async with aio.secure_channel("stt.api.cloud.yandex.net:443", cred) as channel:
+            stub = stt_service_pb2_grpc.RecognizerStub(channel)
+            api_key = self._config_entry.data["api_key"]
             try:
-                async for response in responses:
-                    if response.WhichOneof("Event") != "final":
-                        continue
-                    alternatives += [a.text for a in response.final.alternatives]
+                alternatives = await recognize_stream(stub, api_key)
+                if not alternatives:
+                    return SpeechResult(None, SpeechResultState.ERROR)
+                return SpeechResult(" ".join(alternatives), SpeechResultState.SUCCESS)
             except grpc.RpcError as err:
-                LOGGER.error("Error occured during speech recognition: %s", err)
+                LOGGER.error("Error occurred during speech recognition: %s", err)
                 return SpeechResult(None, SpeechResultState.ERROR)
 
-            if alternatives is None:
-                return SpeechResult(None, SpeechResultState.ERROR)
-            return SpeechResult(" ".join(alternatives), SpeechResultState.SUCCESS)
+    def _get_recognition_options(
+        self, metadata: SpeechMetadata
+    ) -> stt_pb2.StreamingOptions:
+        """Get recognition options based on metadata."""
+        return stt_pb2.StreamingOptions(
+            recognition_model=stt_pb2.RecognitionModelOptions(
+                audio_format=(
+                    stt_pb2.AudioFormatOptions(
+                        container_audio=stt_pb2.ContainerAudio(
+                            container_audio_type=stt_pb2.ContainerAudio.OGG_OPUS,
+                        )
+                    )
+                    if metadata.codec == AudioCodecs.OPUS
+                    else stt_pb2.AudioFormatOptions(
+                        raw_audio=stt_pb2.RawAudio(
+                            audio_encoding=stt_pb2.RawAudio.LINEAR16_PCM,
+                            sample_rate_hertz=metadata.sample_rate,
+                            audio_channel_count=1,
+                        )
+                    )
+                ),
+                text_normalization=stt_pb2.TextNormalizationOptions(
+                    text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_DISABLED,
+                    profanity_filter=False,
+                    literature_text=False,
+                ),
+                language_restriction=stt_pb2.LanguageRestrictionOptions(
+                    restriction_type=stt_pb2.LanguageRestrictionOptions.WHITELIST,
+                    language_code=[metadata.language],
+                ),
+                audio_processing_type=stt_pb2.RecognitionModelOptions.REAL_TIME,
+            )
+        )
