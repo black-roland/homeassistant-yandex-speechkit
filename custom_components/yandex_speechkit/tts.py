@@ -21,6 +21,7 @@ from homeassistant.components.media_player.const import (
 from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
 from homeassistant.components.media_player.const import SERVICE_PLAY_MEDIA
 from homeassistant.components.tts import (
+    ATTR_AUDIO_OUTPUT,
     ATTR_VOICE,
     TextToSpeechEntity,
     TtsAudioType,
@@ -37,10 +38,12 @@ from .const import (
     CONF_PROXY_SPEAKER,
     CONF_TTS_UNSAFE,
     DEFAULT_LANG,
+    DEFAULT_OUTPUT_CONTAINER,
     DEFAULT_VOICE,
     DOMAIN,
     LOGGER,
     TTS_LANGUAGES,
+    TTS_OUTPUT_CONTAINERS,
     TTS_VOICES,
 )
 
@@ -88,13 +91,14 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
     @property
     def supported_options(self) -> list[str]:
         """Return list of supported options like voice, emotion."""
-        return [ATTR_VOICE]
+        return [ATTR_VOICE, ATTR_AUDIO_OUTPUT]
 
     @property
     def default_options(self) -> dict[str, Any]:
         """Return a dict include default options."""
         return {
             ATTR_VOICE: DEFAULT_VOICE,
+            ATTR_AUDIO_OUTPUT: DEFAULT_OUTPUT_CONTAINER,
         }
 
     @callback
@@ -110,6 +114,11 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
         """Get TTS audio from Yandex SpeechKit."""
         LOGGER.debug("Starting TTS synthesis for message: %s", message)
 
+        output_container = options[ATTR_AUDIO_OUTPUT]
+        container_audio_type = TTS_OUTPUT_CONTAINERS.get(
+            output_container, TTS_OUTPUT_CONTAINERS[DEFAULT_OUTPUT_CONTAINER]
+        )
+        voice = options[ATTR_VOICE]
         unsafe_mode = self._config_entry.options.get(CONF_TTS_UNSAFE, False)
 
         if len(message) > 249 and not unsafe_mode:
@@ -122,11 +131,11 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
             text=message if unsafe_mode else message[:249],
             output_audio_spec=tts_pb2.AudioFormatOptions(
                 container_audio=tts_pb2.ContainerAudio(
-                    container_audio_type=tts_pb2.ContainerAudio.WAV
+                    container_audio_type=container_audio_type
                 )
             ),
             hints=[
-                tts_pb2.Hints(voice=options[ATTR_VOICE]),
+                tts_pb2.Hints(voice=voice),
             ],
             loudness_normalization_type=tts_pb2.UtteranceSynthesisRequest.LUFS,
             unsafe_mode=unsafe_mode,
@@ -155,7 +164,7 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
 
                 audio.seek(0)
                 LOGGER.debug("TTS synthesis completed successfully")
-                return ("wav", audio.read())
+                return (output_container, audio.read())
             except grpc.RpcError as err:
                 LOGGER.error("Error occurred during Yandex SpeechKit TTS call: %s", err)
                 return None, None

@@ -6,8 +6,11 @@
 
 import logging
 
+from yandex.cloud.ai.tts.v3.tts_pb2 import ContainerAudio
+
 DOMAIN = "yandex_speechkit"
 LOGGER = logging.getLogger(__package__)
+
 
 # https://yandex.cloud/ru/docs/speechkit/stt/models
 STT_LANGUAGES = [
@@ -37,14 +40,33 @@ TTS_VOICES = {
     "he-IL": ["naomi"],
     "kk-KK": ["amira", "madi", "saule", "zhanar"],
     "ru-RU": [
-        "alena", "filipp", "ermil", "jane", "madi_ru", "saule_ru", "omazh",
-        "zahar", "dasha", "julia", "lera", "masha", "marina", "alexander",
-        "kirill", "anton"
+        "alena",
+        "filipp",
+        "ermil",
+        "jane",
+        "madi_ru",
+        "saule_ru",
+        "omazh",
+        "zahar",
+        "dasha",
+        "julia",
+        "lera",
+        "masha",
+        "marina",
+        "alexander",
+        "kirill",
+        "anton",
     ],
     "uz-UZ": ["nigora", "lola", "yulduz"],
 }
 
 TTS_LANGUAGES = list(TTS_VOICES.keys())
+
+TTS_OUTPUT_CONTAINERS = {
+    "wav": ContainerAudio.WAV,
+    "mp3": ContainerAudio.MP3,
+    "ogg": ContainerAudio.OGG_OPUS,
+}
 
 CONF_TTS_UNSAFE = "tts_unsafe"
 CONF_PROXY_SPEAKER = "proxy_speaker"
@@ -52,3 +74,4 @@ CONF_PROXY_MEDIA_TYPE = "proxy_media_type"
 
 DEFAULT_LANG = "ru-RU"
 DEFAULT_VOICE = "marina"
+DEFAULT_OUTPUT_CONTAINER = "mp3"
