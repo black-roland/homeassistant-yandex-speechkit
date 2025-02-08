@@ -127,7 +127,37 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
                 len(message),
             )
 
-        request = tts_pb2.UtteranceSynthesisRequest(
+        request = self._create_tts_request(
+            message, container_audio_type, voice, unsafe_mode
+        )
+
+        cred = grpc.ssl_channel_credentials()
+        async with aio.secure_channel("tts.api.cloud.yandex.net:443", cred) as channel:
+            stub = tts_service_pb2_grpc.SynthesizerStub(channel)
+
+            api_key = self._config_entry.data[CONF_API_KEY]
+
+            try:
+                audio = await self._fetch_audio_data(stub, request, api_key)
+                if audio:
+                    LOGGER.debug("TTS synthesis completed successfully")
+                    return (output_container, audio)
+                else:
+                    LOGGER.error("No audio data received from Yandex SpeechKit")
+                    return (None, None)
+            except grpc.RpcError as err:
+                LOGGER.error("Error occurred during Yandex SpeechKit TTS call: %s", err)
+                return (None, None)
+
+    def _create_tts_request(
+        self,
+        message: str,
+        container_audio_type: tts_pb2.ContainerAudio.ContainerAudioType.ValueType,
+        voice: str,
+        unsafe_mode: bool,
+    ) -> tts_pb2.UtteranceSynthesisRequest:
+        """Create a TTS request."""
+        return tts_pb2.UtteranceSynthesisRequest(
             text=message if unsafe_mode else message[:249],
             output_audio_spec=tts_pb2.AudioFormatOptions(
                 container_audio=tts_pb2.ContainerAudio(
@@ -141,33 +171,24 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
             unsafe_mode=unsafe_mode,
         )
 
-        cred = grpc.ssl_channel_credentials()
-        async with aio.secure_channel("tts.api.cloud.yandex.net:443", cred) as channel:
-            stub = tts_service_pb2_grpc.SynthesizerStub(channel)
+    async def _fetch_audio_data(
+        self, stub, request: tts_pb2.UtteranceSynthesisRequest, api_key: str
+    ) -> bytes | None:
+        """Fetch audio data from Yandex SpeechKit."""
+        responses = stub.UtteranceSynthesis(
+            request,
+            metadata=(("authorization", f"Api-Key {api_key}"),),
+        )
 
-            api_key = self._config_entry.data[CONF_API_KEY]
+        audio = io.BytesIO()
+        async for response in responses:
+            if response.audio_chunk.data:
+                audio.write(response.audio_chunk.data)
+            else:
+                LOGGER.warning("Empty audio chunk received from Yandex SpeechKit")
 
-            responses = stub.UtteranceSynthesis(
-                request,
-                metadata=(("authorization", f"Api-Key {api_key}"),),
-            )
-
-            try:
-                audio = io.BytesIO()
-                async for response in responses:
-                    if response.audio_chunk.data:
-                        audio.write(response.audio_chunk.data)
-                    else:
-                        LOGGER.warning(
-                            "Empty audio chunk received from Yandex SpeechKit"
-                        )
-
-                audio.seek(0)
-                LOGGER.debug("TTS synthesis completed successfully")
-                return (output_container, audio.read())
-            except grpc.RpcError as err:
-                LOGGER.error("Error occurred during Yandex SpeechKit TTS call: %s", err)
-                return None, None
+        audio.seek(0)
+        return audio.read()
 
 
 class YandexStationTTSProxyEntity(TextToSpeechEntity):
