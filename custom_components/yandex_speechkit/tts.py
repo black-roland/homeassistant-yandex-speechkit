@@ -20,10 +20,15 @@ from homeassistant.components.media_player.const import (
 )
 from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
 from homeassistant.components.media_player.const import SERVICE_PLAY_MEDIA
-from homeassistant.components.tts import TextToSpeechEntity, TtsAudioType
+from homeassistant.components.tts import (
+    ATTR_VOICE,
+    TextToSpeechEntity,
+    TtsAudioType,
+    Voice,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, CONF_API_KEY
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -31,12 +36,12 @@ from .const import (
     CONF_PROXY_MEDIA_TYPE,
     CONF_PROXY_SPEAKER,
     CONF_TTS_UNSAFE,
-    CONF_TTS_VOICE,
     DEFAULT_LANG,
     DEFAULT_VOICE,
     DOMAIN,
     LOGGER,
     TTS_LANGUAGES,
+    TTS_VOICES,
 )
 
 
@@ -80,13 +85,31 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
         """Return the default language."""
         return DEFAULT_LANG
 
+    @property
+    def supported_options(self) -> list[str]:
+        """Return list of supported options like voice, emotion."""
+        return [ATTR_VOICE]
+
+    @property
+    def default_options(self) -> dict[str, Any]:
+        """Return a dict include default options."""
+        return {
+            ATTR_VOICE: DEFAULT_VOICE,
+        }
+
+    @callback
+    def async_get_supported_voices(self, language: str) -> list[Voice] | None:
+        """Return a list of supported voices for a language."""
+        if not (voices := TTS_VOICES.get(language)):
+            return None
+        return [Voice(voice, voice) for voice in voices]
+
     async def async_get_tts_audio(
         self, message: str, language: str, options: dict[str, Any]
     ) -> TtsAudioType:
         """Get TTS audio from Yandex SpeechKit."""
         LOGGER.debug("Starting TTS synthesis for message: %s", message)
 
-        voice = self._config_entry.options.get(CONF_TTS_VOICE, DEFAULT_VOICE)
         unsafe_mode = self._config_entry.options.get(CONF_TTS_UNSAFE, False)
 
         if len(message) > 249 and not unsafe_mode:
@@ -103,7 +126,7 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
                 )
             ),
             hints=[
-                tts_pb2.Hints(voice=voice),
+                tts_pb2.Hints(voice=options[ATTR_VOICE]),
             ],
             loudness_normalization_type=tts_pb2.UtteranceSynthesisRequest.LUFS,
             unsafe_mode=unsafe_mode,

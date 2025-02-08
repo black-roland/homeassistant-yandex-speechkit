@@ -31,16 +31,21 @@ STT_LANGUAGES = [
 ]
 
 # https://yandex.cloud/ru/docs/speechkit/tts/voices
-TTS_LANGUAGES = [
-    "de-DE",
-    "en-US",
-    "he-IL",
-    "kk-KK",
-    "ru-RU",
-    "uz-UZ",
-]
+TTS_VOICES = {
+    "de-DE": ["lea"],
+    "en-US": ["john"],
+    "he-IL": ["naomi"],
+    "kk-KK": ["amira", "madi", "saule", "zhanar"],
+    "ru-RU": [
+        "alena", "filipp", "ermil", "jane", "madi_ru", "saule_ru", "omazh",
+        "zahar", "dasha", "julia", "lera", "masha", "marina", "alexander",
+        "kirill", "anton"
+    ],
+    "uz-UZ": ["nigora", "lola", "yulduz"],
+}
 
-CONF_TTS_VOICE = "tts_voice"
+TTS_LANGUAGES = list(TTS_VOICES.keys())
+
 CONF_TTS_UNSAFE = "tts_unsafe"
 CONF_PROXY_SPEAKER = "proxy_speaker"
 CONF_PROXY_MEDIA_TYPE = "proxy_media_type"

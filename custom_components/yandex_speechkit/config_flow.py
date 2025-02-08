@@ -25,14 +25,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 
-from .const import (
-    CONF_PROXY_MEDIA_TYPE,
-    CONF_PROXY_SPEAKER,
-    CONF_TTS_UNSAFE,
-    CONF_TTS_VOICE,
-    DEFAULT_VOICE,
-    DOMAIN,
-)
+from .const import CONF_PROXY_MEDIA_TYPE, CONF_PROXY_SPEAKER, CONF_TTS_UNSAFE, DOMAIN
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -97,7 +90,6 @@ class YandexSpeechKitOptionsFlow(OptionsFlow):
 
         tts_schema = vol.Schema(
             {
-                vol.Optional(CONF_TTS_VOICE, default=DEFAULT_VOICE): str,
                 vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
             }
         )
