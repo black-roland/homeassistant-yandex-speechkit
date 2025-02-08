@@ -66,54 +66,73 @@ class YandexSpeechKitConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlow:
         """Create the options flow."""
-        return YandexSpeechKitOptionsFlow()
+        return YandexSpeechKitOptionsFlow(config_entry)
 
 
 class YandexSpeechKitOptionsFlow(OptionsFlow):
     """Yandex SpeechKit options flow."""
 
+    def __init__(self, config_entry):
+        """Initialize options flow."""
+        super().__init__()
+        self._config_entry = config_entry
+        self._user_input = {}
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(data=user_input)
+        return await self.async_step_tts(user_input)
 
-        schema = self.yandex_speechkit_config_option_schema()
+    async def async_step_tts(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle TTS options."""
+        if user_input is not None:
+            self._user_input.update(user_input)
+            return await self.async_step_proxy()
+
+        schema = self.add_suggested_values_to_schema(
+            vol.Schema(
+                {
+                    vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
+                }
+            ),
+            self._config_entry.options,
+        )
+
         return self.async_show_form(
-            step_id="init",
+            step_id="tts",
             data_schema=schema,
         )
 
-    def yandex_speechkit_config_option_schema(self) -> vol.Schema:
-        """Yandex SpeechKit options schema."""
+    async def async_step_proxy(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle proxy options."""
+        if user_input is not None:
+            self._user_input.update(user_input)
+            return self.async_create_entry(data=self._user_input)
 
-        tts_schema = vol.Schema(
-            {
-                vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
-            }
-        )
-
-        proxy_schema = vol.Schema(
-            {
-                vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
-                    EntitySelectorConfig(domain=[MEDIA_DOMAIN])
-                ),
-                vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
-                    SelectSelectorConfig(
-                        mode=SelectSelectorMode.DROPDOWN,
-                        options=["tts", "text", "dialog"],
-                    )
-                ),
-            }
-        )
-
-        return self.add_suggested_values_to_schema(
+        schema = self.add_suggested_values_to_schema(
             vol.Schema(
                 {
-                    **tts_schema.schema,
-                    **proxy_schema.schema,
+                    vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
+                        EntitySelectorConfig(domain=[MEDIA_DOMAIN])
+                    ),
+                    vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
+                        SelectSelectorConfig(
+                            mode=SelectSelectorMode.DROPDOWN,
+                            options=["tts", "text", "dialog"],
+                        )
+                    ),
                 }
             ),
-            self.config_entry.options,
+            self._config_entry.options,
+        )
+
+        return self.async_show_form(
+            step_id="proxy",
+            data_schema=schema,
+            last_step=True,
         )

@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "API Key"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "tts": {
+        "title": "Text-to-Speech",
+        "description": "By default, text longer than 250 characters is truncated. You can enable automatic splitting for synthesizing long messages.",
+        "data": {
+          "tts_unsafe": "Automatic splitting of long phrases"
+        },
+        "data_description": {
+          "tts_unsafe": "Do not truncate text longer than 250 characters. Enabling this option may result in a slight decrease in quality."
+        }
+      },
+      "proxy": {
+        "title": "Yandex.Station proxy",
+        "description": "Allows synthesizing text through the [Yandex.Station](https://github.com/AlexxIT/YandexStation#первый-способ-вызвать-tts) integration instead of using cloud-based SpeechKit.",
+        "data": {
+          "proxy_speaker": "Speaker with Alice",
+          "proxy_media_type": "TTS invocation method"
+        }
+      }
+    }
+  }
+}

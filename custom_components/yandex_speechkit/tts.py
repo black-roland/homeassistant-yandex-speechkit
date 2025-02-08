@@ -236,7 +236,7 @@ class YandexStationTTSProxyEntity(TextToSpeechEntity):
     def async_get_supported_voices(self, language: str) -> list[Voice] | None:
         """Return a list of supported voices for a language."""
         return [
-            Voice(PROXY_ERROR, "Error"),
+            Voice(PROXY_ERROR, "Возвращать ошибку"),
             Voice(PROXY_EMPTY_WAV, "empty.wav"),
             Voice(PROXY_EMPTY_MP3, "empty.mp3"),
         ]
