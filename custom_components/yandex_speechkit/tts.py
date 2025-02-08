@@ -275,7 +275,7 @@ class YandexStationTTSProxyEntity(TextToSpeechEntity):
     def _read_empty(self, ext: str) -> TtsAudioType:
         try:
             LOGGER.debug(f"Returning an empty.{ext}...")
-            filename = os.path.join(os.path.dirname(__file__), f"empty.{ext}")
+            filename = os.path.join(os.path.dirname(__file__), "empty", f"empty.{ext}")
             with open(filename, "rb") as file:
                 empty = file.read()
                 return (ext, empty)
