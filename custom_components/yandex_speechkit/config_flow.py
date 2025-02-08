@@ -20,7 +20,6 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.helpers.selector import (
     EntitySelector,
     EntitySelectorConfig,
-    SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -46,7 +45,7 @@ class YandexSpeechKitConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yandex SpeechKit."""
 
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 2
 
     def __init__(self) -> None:
         """Initialize config flow."""
@@ -95,20 +94,33 @@ class YandexSpeechKitOptionsFlow(OptionsFlow):
 
     def yandex_speechkit_config_option_schema(self) -> vol.Schema:
         """Yandex SpeechKit options schema."""
+
+        tts_schema = vol.Schema(
+            {
+                vol.Optional(CONF_TTS_VOICE, default=DEFAULT_VOICE): str,
+                vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
+            }
+        )
+
+        proxy_schema = vol.Schema(
+            {
+                vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
+                    EntitySelectorConfig(domain=[MEDIA_DOMAIN])
+                ),
+                vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
+                    SelectSelectorConfig(
+                        mode=SelectSelectorMode.DROPDOWN,
+                        options=["tts", "text", "dialog"],
+                    )
+                ),
+            }
+        )
+
         return self.add_suggested_values_to_schema(
             vol.Schema(
                 {
-                    vol.Optional(CONF_TTS_VOICE, default=DEFAULT_VOICE): str,
-                    vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
-                    vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
-                        EntitySelectorConfig(domain=[MEDIA_DOMAIN])
-                    ),
-                    vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
-                        SelectSelectorConfig(
-                            mode=SelectSelectorMode.DROPDOWN,
-                            options=["tts", "text", "dialog"],
-                        )
-                    ),
+                    **tts_schema.schema,
+                    **proxy_schema.schema,
                 }
             ),
             self.config_entry.options,
