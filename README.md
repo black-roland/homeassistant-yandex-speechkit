@@ -54,7 +54,7 @@ If this integration has been useful to you, consider [buying the author a coffee
 
 A huge thank you to everyone who has supported this project! Your contributions make a big difference.
 
-[TK]
+![Thank you](https://github.com/user-attachments/assets/d00d2ad7-6dec-4449-bd0f-0c0a270490fa)
 
 ---
 
@@ -110,4 +110,5 @@ SpeechKit — это облачный сервис, плата за которы
 
 Огромное спасибо всем, кто поддерживает этот проект! Ваш вклад имеет большое значение.
 
-[TK]
+![Thank you](https://github.com/user-attachments/assets/d00d2ad7-6dec-4449-bd0f-0c0a270490fa)
+
