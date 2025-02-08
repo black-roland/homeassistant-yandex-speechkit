@@ -42,6 +42,9 @@ from .const import (
     DEFAULT_VOICE,
     DOMAIN,
     LOGGER,
+    PROXY_EMPTY_MP3,
+    PROXY_EMPTY_WAV,
+    PROXY_ERROR,
     TTS_LANGUAGES,
     TTS_OUTPUT_CONTAINERS,
     TTS_VOICES,
@@ -217,6 +220,27 @@ class YandexStationTTSProxyEntity(TextToSpeechEntity):
         """Return the default language."""
         return DEFAULT_LANG
 
+    @property
+    def supported_options(self) -> list[str]:
+        """Return list of supported options like voice, emotion."""
+        return [ATTR_VOICE]
+
+    @property
+    def default_options(self) -> dict[str, Any]:
+        """Return a dict include default options."""
+        return {
+            ATTR_VOICE: PROXY_ERROR,
+        }
+
+    @callback
+    def async_get_supported_voices(self, language: str) -> list[Voice] | None:
+        """Return a list of supported voices for a language."""
+        return [
+            Voice(PROXY_ERROR, "Error"),
+            Voice(PROXY_EMPTY_WAV, "empty.wav"),
+            Voice(PROXY_EMPTY_MP3, "empty.mp3"),
+        ]
+
     async def async_get_tts_audio(
         self, message: str, language: str, options: dict[str, Any]
     ) -> TtsAudioType:
@@ -241,15 +265,20 @@ class YandexStationTTSProxyEntity(TextToSpeechEntity):
             LOGGER.error("Error proxying TTS request to Yandex.Station: %s", e)
             return (None, None)
 
-        def _read_empty_wav() -> TtsAudioType:
-            try:
-                LOGGER.debug("Returning an empty.wav...")
-                filename = os.path.join(os.path.dirname(__file__), "empty.wav")
-                with open(filename, "rb") as file:
-                    empty = file.read()
-                    return ("wav", empty)
-            except OSError:
-                LOGGER.error("Error reading empty.wav")
-                return (None, None)
+        if options.get(ATTR_VOICE) == PROXY_EMPTY_WAV:
+            return await self.hass.async_add_executor_job(self._read_empty, "wav")
+        elif options.get(ATTR_VOICE) == PROXY_EMPTY_MP3:
+            return await self.hass.async_add_executor_job(self._read_empty, "mp3")
 
-        return await self.hass.async_add_executor_job(_read_empty_wav)
+        return (None, None)
+
+    def _read_empty(self, ext: str) -> TtsAudioType:
+        try:
+            LOGGER.debug(f"Returning an empty.{ext}...")
+            filename = os.path.join(os.path.dirname(__file__), f"empty.{ext}")
+            with open(filename, "rb") as file:
+                empty = file.read()
+                return (ext, empty)
+        except OSError:
+            LOGGER.error(f"Error reading empty.{ext}")
+            return (None, None)

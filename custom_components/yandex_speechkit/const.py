@@ -68,6 +68,10 @@ TTS_OUTPUT_CONTAINERS = {
     "ogg": ContainerAudio.OGG_OPUS,
 }
 
+PROXY_ERROR = "error"
+PROXY_EMPTY_WAV = "empty_wav"
+PROXY_EMPTY_MP3 = "empty_mp3"
+
 CONF_TTS_UNSAFE = "tts_unsafe"
 CONF_PROXY_SPEAKER = "proxy_speaker"
 CONF_PROXY_MEDIA_TYPE = "proxy_media_type"
