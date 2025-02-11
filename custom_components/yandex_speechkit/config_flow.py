@@ -40,10 +40,6 @@ class YandexSpeechKitConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 2
 
-    def __init__(self) -> None:
-        """Initialize config flow."""
-        self.api_key: str | None = None
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
