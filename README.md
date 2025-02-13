@@ -37,12 +37,12 @@ SpeechKit is a cloud service. Fees are charged according to the Yandex Cloud tar
 ## Installation
 
 1. Add the repository to HACS (Home Assistant Community Store): `https://github.com/black-roland/homeassistant-yandex-speechkit` or use the blue button above
-2. Install the custom component through HACS.
+2. Install the custom component using HACS.
 3. Restart Home Assistant to complete the installation.
 
 ## Configuration
 
-- [Set up the integraion in settings](https://my.home-assistant.io/redirect/config_flow_start/?domain=yandex_speechkit).
+- [Set up the integration in settings](https://my.home-assistant.io/redirect/config_flow_start/?domain=yandex_speechkit).
 - Enter your API key and save the configuration.
 - Configure Yandex SpeechKit as an STT and TTS engine for your Voice assistant.
 
@@ -96,9 +96,9 @@ SpeechKit — это облачный сервис, плата за которы
 2. Установите пользовательский компонент через HACS.
 3. Перезапустите Home Assistant, чтобы завершить установку.
 
-## Конфигурация
+## Настройка
 
-- Добавьте интеграцию в настройках.
+- [Добавьте интеграцию в настройках](https://my.home-assistant.io/redirect/config_flow_start/?domain=yandex_speechkit).
 - Введите ваш ключ API и сохраните конфигурацию.
 - Настройте Yandex SpeechKit в качестве движка распознавания (STT) и синтеза речи (TTS) для вашего голосового помощника.
 
