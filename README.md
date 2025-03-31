@@ -28,11 +28,11 @@ SpeechKit is a cloud service. Fees are charged according to the Yandex Cloud tar
 
 **Yandex Cloud Account:**
 
-- Create a [service account](https://yandex.cloud/en/docs/iam/concepts/users/service-accounts) with the following roles:
-  - `ai.speechkit-tts.user`
-  - `ai.speechkit-stt.user`
-  - (optional) `ai.languageModels.user` if using YandexGPT integration.
-- Generate an [API key](https://yandex.cloud/en/docs/iam/concepts/authorization/api-key) for authentication.
+1. Create a [service account](https://yandex.cloud/en/docs/iam/concepts/users/service-accounts) with the following roles:
+   - `ai.speechkit-tts.user`
+   - `ai.speechkit-stt.user`
+   - (optional) `ai.languageModels.user` if using YandexGPT integration.
+1. Generate an [API key](https://yandex.cloud/en/docs/iam/concepts/authorization/api-key), specifying `yc.ai.foundationModels.execute` as the scope.
 
 ## Installation
 
@@ -84,11 +84,11 @@ SpeechKit — это облачный сервис, плата за которы
 
 **Аккаунт Yandex Cloud:**
 
-- Создайте [сервисный аккаунт](https://yandex.cloud/ru/docs/iam/concepts/users/service-accounts) с ролями:
-  - `ai.speechkit-tts.user`
-  - `ai.speechkit-stt.user`
-  - (опционально) `ai.languageModels.user`, если используется интеграция с YandexGPT.
-- Сгенерируйте [API-ключ](https://yandex.cloud/ru/docs/iam/concepts/authorization/api-key) для аутентификации.
+1. Создайте [сервисный аккаунт](https://yandex.cloud/ru/docs/iam/concepts/users/service-accounts) с ролями:
+   - `ai.speechkit-tts.user`
+   - `ai.speechkit-stt.user`
+   - (опционально) `ai.languageModels.user`, если используется интеграция с YandexGPT.
+1. Сгенерируйте [API-ключ](https://yandex.cloud/ru/docs/iam/concepts/authorization/api-key), указав `yc.ai.foundationModels.execute` в качестве области действия.
 
 ## Установка
 
