@@ -156,9 +156,9 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
                     )
                 ),
                 text_normalization=stt_pb2.TextNormalizationOptions(
-                    text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_DISABLED,
+                    text_normalization=stt_pb2.TextNormalizationOptions.TEXT_NORMALIZATION_ENABLED,
                     profanity_filter=False,
-                    literature_text=False,
+                    literature_text=True,
                 ),
                 language_restriction=stt_pb2.LanguageRestrictionOptions(
                     restriction_type=stt_pb2.LanguageRestrictionOptions.WHITELIST,
