@@ -116,9 +116,12 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
             )
             alternatives = []
             async for response in responses:
-                if response.WhichOneof("Event") != "final":
+                if response.WhichOneof("Event") != "final_refinement":
                     continue
-                alternatives += [a.text for a in response.final.alternatives]
+                alternatives += [
+                    a.text
+                    for a in response.final_refinement.normalized_text.alternatives
+                ]
             return alternatives
 
         cred = grpc.ssl_channel_credentials()
