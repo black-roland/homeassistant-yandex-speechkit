@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^custom_components/.+/manifest\\.json$"],
+      "matchStrings": [
+        "[\\[ ](\"(?<depName>[^\"]+)(?<currentValue>(==|>=|<=)[0-9\\.]+)\"[,\\s]?)[,\\]]"
+      ],
+      "versioningTemplate": "pep440",
+      "depNameTemplate": "{{depName}}",
+      "datasourceTemplate": "pypi"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["pypi"],
+      "groupName": "Integration dependency"
+    }
+  ],
+  "rangeStrategy": "bump",
+  "reviewersFromCodeOwners": true
+}
