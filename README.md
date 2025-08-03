@@ -48,7 +48,7 @@ SpeechKit is a cloud service. Fees are charged according to the Yandex Cloud tar
 
 ## Donations
 
-If this integration has been useful to you, consider [buying the author a coffee](https://www.donationalerts.com/r/mansmarthome)! Your gratitude is appreciated!
+If this integration has been useful to you, consider [buying the author a coffee](https://boosty.to/mansmarthome/donate?utm_source=github&utm_medium=referral&utm_campaign=speechkit)! Your gratitude is appreciated!
 
 #### Thank you
 
@@ -104,7 +104,7 @@ SpeechKit — это облачный сервис, плата за которы
 
 ## Поддержка автора
 
-Если эта интеграция была вам полезна, подумайте о том, чтобы [угостить автора чашечкой кофе](https://mansmarthome.info/donate/#donationalerts)! Ваша благодарность ценится!
+Если эта интеграция была вам полезна, подумайте о том, чтобы [угостить автора чашечкой кофе](https://mansmarthome.info/donate/?utm_source=github&utm_medium=referral&utm_campaign=speechkit#%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0-%D0%B1%D1%8B%D1%81%D1%82%D1%80%D1%8B%D1%85-%D0%BF%D0%BB%D0%B0%D1%82%D0%B5%D0%B6%D0%B5%D0%B9)! Ваша благодарность ценится!
 
 #### Благодарности
 
