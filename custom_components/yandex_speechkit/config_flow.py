@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
+from homeassistant import data_entry_flow
 from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -58,77 +59,62 @@ class YandexSpeechKitConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> OptionsFlow:
+    def async_get_options_flow(_config_entry: ConfigEntry) -> OptionsFlow:
         """Create the options flow."""
-        return YandexSpeechKitOptionsFlow(config_entry)
+        return YandexSpeechKitOptionsFlow()
 
 
 class YandexSpeechKitOptionsFlow(OptionsFlow):
     """Yandex SpeechKit options flow."""
 
-    def __init__(self, config_entry):
-        """Initialize options flow."""
-        super().__init__()
-        self._config_entry = config_entry
-        self._user_input = {}
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
-        return await self.async_step_tts(user_input)
-
-    async def async_step_tts(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle TTS options."""
         if user_input is not None:
-            self._user_input.update(user_input)
-            return await self.async_step_proxy()
+            return self.async_create_entry(data=user_input)
 
-        schema = self.add_suggested_values_to_schema(
-            vol.Schema(
-                {
-                    vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
-                }
-            ),
-            self._config_entry.options,
-        )
-
+        schema = self.yandex_speechkit_config_option_schema()
         return self.async_show_form(
-            step_id="tts",
+            step_id="init",
             data_schema=schema,
         )
 
-    async def async_step_proxy(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle proxy options."""
-        if user_input is not None:
-            self._user_input.update(user_input)
-            return self.async_create_entry(data=self._user_input)
+    def yandex_speechkit_config_option_schema(self) -> vol.Schema:
+        """Yandex SpeechKit options schema."""
 
-        schema = self.add_suggested_values_to_schema(
+        tts_schema = vol.Schema(
+            {
+                vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
+            }
+        )
+
+        proxy_schema = vol.Schema(
+            {
+                vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
+                    EntitySelectorConfig(domain=[MEDIA_DOMAIN])
+                ),
+                vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
+                    SelectSelectorConfig(
+                        mode=SelectSelectorMode.DROPDOWN,
+                        options=["tts", "text", "dialog"],
+                    )
+                ),
+            }
+        )
+
+        return self.add_suggested_values_to_schema(
             vol.Schema(
                 {
-                    vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
-                        EntitySelectorConfig(domain=[MEDIA_DOMAIN])
+                    vol.Required("tts_section"): data_entry_flow.section(
+                        tts_schema,
+                        {"collapsed": False},
                     ),
-                    vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
-                        SelectSelectorConfig(
-                            mode=SelectSelectorMode.DROPDOWN,
-                            options=["tts", "text", "dialog"],
-                        )
+                    vol.Required("proxy_section"): data_entry_flow.section(
+                        proxy_schema,
+                        {"collapsed": True},
                     ),
                 }
             ),
-            self._config_entry.options,
-        )
-
-        return self.async_show_form(
-            step_id="proxy",
-            data_schema=schema,
-            last_step=True,
+            self.config_entry.options,
         )
