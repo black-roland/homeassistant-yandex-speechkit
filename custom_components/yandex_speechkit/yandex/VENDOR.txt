@@ -1,0 +1,9 @@
+Generated SpeechKit protobuf/gRPC stubs.
+source: https://github.com/yandex-cloud/cloudapi
+commit: 849f09ebe4e32555fe937f724642e3cd24f3c723
+generator: grpcio-tools 1.83.1
+Protobuf Python Version: 7.35.1
+license: MIT (see LICENSE)
+Supporting google.api and google.rpc stubs are under ../google (Apache-2.0).
+Imports are rewritten to be relative so they resolve inside this component
+and do not shadow a top-level yandex package.

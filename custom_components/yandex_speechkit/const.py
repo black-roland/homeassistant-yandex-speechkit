@@ -6,7 +6,7 @@
 
 import logging
 
-from yandex.cloud.ai.tts.v3.tts_pb2 import ContainerAudio
+from .yandex.cloud.ai.tts.v3.tts_pb2 import ContainerAudio
 
 DOMAIN = "yandex_speechkit"
 LOGGER = logging.getLogger(__package__)

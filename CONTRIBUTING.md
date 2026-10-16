@@ -26,3 +26,13 @@ PR с исправлениями и улучшениями всегда прив
 3. Будьте готовы к тому, что я могу попросить внести правки.
 
 Спасибо за ваш вклад!
+
+## Обновление vendored stubs
+
+gRPC-стабы SpeechKit лежат в `custom_components/yandex_speechkit/yandex` и `custom_components/yandex_speechkit/google`. Чтобы перегенерировать их после изменений API Yandex:
+
+```bash
+scripts/regenerate_stubs.sh
+```
+
+Скрипт клонирует `yandex-cloud/cloudapi`, запускает `grpc_tools.protoc` (`grpcio-tools==1.83.1`, protobuf 7) и копирует результат в компонент. После запуска просмотрите diff перед коммитом.
