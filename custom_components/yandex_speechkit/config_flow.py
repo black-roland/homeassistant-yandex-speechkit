@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import voluptuous as vol
+import probatio as vol
 from homeassistant import data_entry_flow
 from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
 from homeassistant.config_entries import (ConfigEntry, ConfigFlow,
