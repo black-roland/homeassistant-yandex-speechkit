@@ -27,6 +27,10 @@ from homeassistant.helpers.selector import (
 
 from .const import CONF_PROXY_MEDIA_TYPE, CONF_PROXY_SPEAKER, CONF_TTS_UNSAFE, DOMAIN
 
+DOC_YANDEX_STATION_INTEGRATION_URL = (
+    "https://github.com/AlexxIT/YandexStation#первый-способ-вызвать-tts"
+)
+
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_API_KEY): str,
@@ -130,5 +134,6 @@ class YandexSpeechKitOptionsFlow(OptionsFlow):
         return self.async_show_form(
             step_id="proxy",
             data_schema=schema,
+            description_placeholders={"doc_yandex_station_integration_url": DOC_YANDEX_STATION_INTEGRATION_URL},
             last_step=True,
         )

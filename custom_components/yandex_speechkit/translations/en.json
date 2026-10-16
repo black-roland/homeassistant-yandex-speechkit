@@ -22,7 +22,7 @@
       },
       "proxy": {
         "title": "Yandex.Station proxy",
-        "description": "Allows synthesizing text through the [Yandex.Station](https://github.com/AlexxIT/YandexStation#первый-способ-вызвать-tts) integration instead of using cloud-based SpeechKit.",
+        "description": "Allows synthesizing text through the [Yandex.Station]({doc_yandex_station_integration_url}) integration instead of using cloud-based SpeechKit.",
         "data": {
           "proxy_speaker": "Speaker with Alice",
           "proxy_media_type": "TTS invocation method"
