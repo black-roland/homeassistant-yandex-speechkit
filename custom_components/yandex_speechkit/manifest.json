@@ -8,6 +8,6 @@
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/black-roland/homeassistant-yandex-speechkit/issues",
   "loggers": ["yandex_speechkit"],
-  "requirements": [],
+  "requirements": ["protobuf>=7.36.0"],
   "version": "1.2.0"
 }
