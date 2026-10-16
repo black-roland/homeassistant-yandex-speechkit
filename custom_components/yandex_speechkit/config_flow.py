@@ -9,27 +9,24 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
+from homeassistant import data_entry_flow
 from homeassistant.components.media_player.const import DOMAIN as MEDIA_DOMAIN
-from homeassistant.config_entries import (
-    ConfigEntry,
-    ConfigFlow,
-    ConfigFlowResult,
-    OptionsFlow,
-)
+from homeassistant.config_entries import (ConfigEntry, ConfigFlow,
+                                          ConfigFlowResult, OptionsFlow)
 from homeassistant.const import CONF_API_KEY
-from homeassistant.helpers.selector import (
-    EntitySelector,
-    EntitySelectorConfig,
-    SelectSelector,
-    SelectSelectorConfig,
-    SelectSelectorMode,
-)
+from homeassistant.helpers.selector import (EntitySelector,
+                                            EntitySelectorConfig,
+                                            SelectSelector,
+                                            SelectSelectorConfig,
+                                            SelectSelectorMode)
 
-from .const import CONF_PROXY_MEDIA_TYPE, CONF_PROXY_SPEAKER, CONF_TTS_UNSAFE, DOMAIN
+from .const import (CONF_PROXY_MEDIA_TYPE, CONF_PROXY_SPEAKER, CONF_TTS_UNSAFE,
+                    DOMAIN, SECTION_PROXY, SECTION_TTS)
 
 DOC_YANDEX_STATION_INTEGRATION_URL = (
     "https://github.com/AlexxIT/YandexStation#первый-способ-вызвать-tts"
 )
+
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -62,78 +59,81 @@ class YandexSpeechKitConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> OptionsFlow:
+    def async_get_options_flow(_config_entry: ConfigEntry) -> OptionsFlow:
         """Create the options flow."""
-        return YandexSpeechKitOptionsFlow(config_entry)
+        return YandexSpeechKitOptionsFlow()
 
 
 class YandexSpeechKitOptionsFlow(OptionsFlow):
     """Yandex SpeechKit options flow."""
 
-    def __init__(self, config_entry):
-        """Initialize options flow."""
-        super().__init__()
-        self._config_entry = config_entry
-        self._user_input = {}
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
-        return await self.async_step_tts(user_input)
-
-    async def async_step_tts(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle TTS options."""
         if user_input is not None:
-            self._user_input.update(user_input)
-            return await self.async_step_proxy()
+            return self.async_create_entry(data=self._flatten_options(user_input))
 
-        schema = self.add_suggested_values_to_schema(
-            vol.Schema(
-                {
-                    vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
-                }
-            ),
-            self._config_entry.options,
-        )
-
+        schema = self.yandex_speechkit_config_option_schema()
         return self.async_show_form(
-            step_id="tts",
-            data_schema=schema,
-        )
-
-    async def async_step_proxy(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle proxy options."""
-        if user_input is not None:
-            self._user_input.update(user_input)
-            return self.async_create_entry(data=self._user_input)
-
-        schema = self.add_suggested_values_to_schema(
-            vol.Schema(
-                {
-                    vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
-                        EntitySelectorConfig(domain=[MEDIA_DOMAIN])
-                    ),
-                    vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
-                        SelectSelectorConfig(
-                            mode=SelectSelectorMode.DROPDOWN,
-                            options=["tts", "text", "dialog"],
-                        )
-                    ),
-                }
-            ),
-            self._config_entry.options,
-        )
-
-        return self.async_show_form(
-            step_id="proxy",
+            step_id="init",
             data_schema=schema,
             description_placeholders={"doc_yandex_station_integration_url": DOC_YANDEX_STATION_INTEGRATION_URL},
-            last_step=True,
+        )
+
+    def _flatten_options(self, user_input: dict[str, Any]) -> dict[str, Any]:
+        """Store section input as a flat options mapping."""
+        return {
+            key: value
+            for section in (SECTION_TTS, SECTION_PROXY)
+            for key, value in user_input.get(section, {}).items()
+        }
+
+    def yandex_speechkit_config_option_schema(self) -> vol.Schema:
+        """Yandex SpeechKit options schema."""
+
+        tts_schema = vol.Schema(
+            {
+                vol.Optional(CONF_TTS_UNSAFE, default=False): bool,
+            }
+        )
+
+        proxy_schema = vol.Schema(
+            {
+                vol.Optional(CONF_PROXY_SPEAKER): EntitySelector(
+                    EntitySelectorConfig(domain=[MEDIA_DOMAIN])
+                ),
+                vol.Optional(CONF_PROXY_MEDIA_TYPE, default="tts"): SelectSelector(
+                    SelectSelectorConfig(
+                        mode=SelectSelectorMode.DROPDOWN,
+                        options=["tts", "text", "dialog"],
+                    )
+                ),
+            }
+        )
+
+        options = self.config_entry.options
+        return self.add_suggested_values_to_schema(
+            vol.Schema(
+                {
+                    vol.Required(SECTION_TTS): data_entry_flow.section(
+                        tts_schema,
+                        {"collapsed": False},
+                    ),
+                    vol.Required(SECTION_PROXY): data_entry_flow.section(
+                        proxy_schema,
+                        {"collapsed": True},
+                    ),
+                }
+            ),
+            {
+                SECTION_TTS: {
+                    CONF_TTS_UNSAFE: options.get(CONF_TTS_UNSAFE, False),
+                },
+                SECTION_PROXY: {
+                    key: options[key]
+                    for key in (CONF_PROXY_SPEAKER, CONF_PROXY_MEDIA_TYPE)
+                    if key in options
+                },
+            },
         )

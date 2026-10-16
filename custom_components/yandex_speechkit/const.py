@@ -76,6 +76,9 @@ CONF_TTS_UNSAFE = "tts_unsafe"
 CONF_PROXY_SPEAKER = "proxy_speaker"
 CONF_PROXY_MEDIA_TYPE = "proxy_media_type"
 
+SECTION_TTS = "tts_section"
+SECTION_PROXY = "proxy_section"
+
 DEFAULT_LANG = "ru-RU"
 DEFAULT_VOICE = "marina"
 DEFAULT_OUTPUT_CONTAINER = "mp3"
