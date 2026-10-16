@@ -7,8 +7,6 @@
 from typing import AsyncGenerator, AsyncIterable
 
 import grpc
-import yandex.cloud.ai.stt.v3.stt_pb2 as stt_pb2
-import yandex.cloud.ai.stt.v3.stt_service_pb2_grpc as stt_service_pb2_grpc
 from grpc import aio
 from homeassistant.components.stt import (
     AudioBitRates,
@@ -27,6 +25,8 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, LOGGER, STT_LANGUAGES
+from .yandex.cloud.ai.stt.v3 import stt_pb2
+from .yandex.cloud.ai.stt.v3 import stt_service_pb2_grpc
 
 
 async def async_setup_entry(

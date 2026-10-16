@@ -5,4 +5,8 @@ header:
   paths:
     - 'custom_components/**/*.py'
 
+  paths-ignore:
+    - 'custom_components/yandex_speechkit/yandex/**'
+    - 'custom_components/yandex_speechkit/google/**'
+
   comment: on-failure

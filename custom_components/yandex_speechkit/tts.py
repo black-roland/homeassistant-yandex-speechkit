@@ -11,8 +11,6 @@ import os
 from typing import Any
 
 import grpc
-import yandex.cloud.ai.tts.v3.tts_pb2 as tts_pb2
-import yandex.cloud.ai.tts.v3.tts_service_pb2_grpc as tts_service_pb2_grpc
 from grpc import aio
 from homeassistant.components.media_player.const import (
     ATTR_MEDIA_CONTENT_ID,
@@ -49,6 +47,8 @@ from .const import (
     TTS_OUTPUT_CONTAINERS,
     TTS_VOICES,
 )
+from .yandex.cloud.ai.tts.v3 import tts_pb2
+from .yandex.cloud.ai.tts.v3 import tts_service_pb2_grpc
 
 
 async def async_setup_entry(
