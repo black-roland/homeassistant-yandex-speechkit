@@ -29,7 +29,7 @@ PR с исправлениями и улучшениями всегда прив
 
 ## Обновление vendored stubs
 
-gRPC-стабы SpeechKit лежат в `custom_components/yandex_speechkit/yandex` и `custom_components/yandex_speechkit/google`. Чтобы перегенерировать их после изменений API Yandex:
+gRPC-стабы SpeechKit лежат в `custom_components/yandex_speechkit/yandex`. Общие файлы `google.api` и `yandex.cloud.operation` / `validation` не вендорятся: их регистрирует `yandexcloud`, и вторая копия ломает пул дескрипторов protobuf. Чтобы перегенерировать стабы после изменений API Yandex:
 
 ```bash
 scripts/regenerate_stubs.sh

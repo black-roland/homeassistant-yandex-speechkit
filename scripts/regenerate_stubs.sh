@@ -18,25 +18,54 @@ python3 -m venv "$WORKDIR/venv"
 "$WORKDIR/venv/bin/pip" install -q "protobuf>=7.36,<8" "grpcio-tools==1.83.1"
 git clone --depth 1 --recurse-submodules https://github.com/yandex-cloud/cloudapi.git "$WORKDIR/cloudapi"
 
-mkdir -p "$WORKDIR/generated"
-(
-  cd "$WORKDIR/cloudapi"
-  "$WORKDIR/venv/bin/python" -m grpc_tools.protoc \
-    -I . \
-    -I third_party/googleapis \
-    --python_out="$WORKDIR/generated" \
-    --grpc_python_out="$WORKDIR/generated" \
-    yandex/cloud/ai/stt/v3/stt.proto \
-    yandex/cloud/ai/stt/v3/stt_service.proto \
-    yandex/cloud/ai/tts/v3/tts.proto \
-    yandex/cloud/ai/tts/v3/tts_service.proto \
-    yandex/cloud/operation/operation.proto \
-    yandex/cloud/api/operation.proto \
-    yandex/cloud/validation.proto \
-    google/rpc/status.proto \
-    google/api/annotations.proto \
-    google/api/http.proto
-)
+# Service protos also import google.api, yandex.cloud.operation, and
+# yandex.cloud.validation. Those filenames are registered by yandexcloud and
+# googleapis-common-protos. Vendoring a second copy collides in the process-wide
+# descriptor pool. The integration only calls RecognizeStreaming and
+# UtteranceSynthesis, so generate service stubs without those imports.
+mkdir -p \
+  "$WORKDIR/overlay/yandex/cloud/ai/stt/v3" \
+  "$WORKDIR/overlay/yandex/cloud/ai/tts/v3" \
+  "$WORKDIR/generated"
+cat > "$WORKDIR/overlay/yandex/cloud/ai/stt/v3/stt_service.proto" << 'EOF'
+syntax = "proto3";
+
+package speechkit.stt.v3;
+
+import "yandex/cloud/ai/stt/v3/stt.proto";
+
+option go_package = "github.com/yandex-cloud/go-genproto/yandex/cloud/ai/stt/v3;stt";
+option java_package = "yandex.cloud.api.ai.stt.v3";
+
+service Recognizer {
+  rpc RecognizeStreaming(stream StreamingRequest) returns (stream StreamingResponse);
+}
+EOF
+cat > "$WORKDIR/overlay/yandex/cloud/ai/tts/v3/tts_service.proto" << 'EOF'
+syntax = "proto3";
+
+package speechkit.tts.v3;
+
+import "yandex/cloud/ai/tts/v3/tts.proto";
+
+option go_package = "github.com/yandex-cloud/go-genproto/yandex/cloud/ai/tts/v3;tts";
+option java_package = "yandex.cloud.api.ai.tts.v3";
+
+service Synthesizer {
+  rpc UtteranceSynthesis(UtteranceSynthesisRequest) returns (stream UtteranceSynthesisResponse);
+  rpc StreamSynthesis(stream StreamSynthesisRequest) returns (stream StreamSynthesisResponse);
+}
+EOF
+"$WORKDIR/venv/bin/python" -m grpc_tools.protoc \
+  -I "$WORKDIR/overlay" \
+  -I "$WORKDIR/cloudapi" \
+  -I "$WORKDIR/cloudapi/third_party/googleapis" \
+  --python_out="$WORKDIR/generated" \
+  --grpc_python_out="$WORKDIR/generated" \
+  yandex/cloud/ai/stt/v3/stt.proto \
+  yandex/cloud/ai/stt/v3/stt_service.proto \
+  yandex/cloud/ai/tts/v3/tts.proto \
+  yandex/cloud/ai/tts/v3/tts_service.proto
 
 "$WORKDIR/venv/bin/python" - "$WORKDIR" "$DEST" << 'PY'
 import os
@@ -61,12 +90,6 @@ needed = [
     "yandex/cloud/ai/tts/v3/tts_pb2_grpc.py",
     "yandex/cloud/ai/tts/v3/tts_service_pb2.py",
     "yandex/cloud/ai/tts/v3/tts_service_pb2_grpc.py",
-    "yandex/cloud/api/operation_pb2.py",
-    "yandex/cloud/operation/operation_pb2.py",
-    "yandex/cloud/validation_pb2.py",
-    "google/api/annotations_pb2.py",
-    "google/api/http_pb2.py",
-    "google/rpc/status_pb2.py",
 ]
 packages = [
     "yandex",
@@ -76,10 +99,6 @@ packages = [
     "yandex/cloud/ai/stt/v3",
     "yandex/cloud/ai/tts",
     "yandex/cloud/ai/tts/v3",
-    "yandex/cloud/api",
-    "yandex/cloud/operation",
-    "google/api",
-    "google/rpc",
 ]
 
 for tree in (dest / "yandex", dest / "google"):
@@ -95,10 +114,6 @@ for rel in packages:
     init = dest / rel / "__init__.py"
     init.parent.mkdir(parents=True, exist_ok=True)
     init.write_text("")
-
-# Do not add google/__init__.py. A regular package there would shadow the
-# top-level google namespace if this component directory is ever placed on
-# sys.path, breaking google.protobuf.
 
 pat = re.compile(r"^from ((?:yandex|google)(?:\.\w+)*) import (\w+)(?: as (\w+))?\s*$")
 
@@ -136,7 +151,6 @@ for rel in needed:
     rewrite(dest / rel)
 
 shutil.copy2(cloudapi / "LICENSE", dest / "yandex" / "LICENSE")
-shutil.copy2(cloudapi / "third_party" / "googleapis" / "LICENSE", dest / "google" / "LICENSE")
 
 commit = subprocess.check_output(
     ["git", "-C", str(cloudapi), "rev-parse", "HEAD"], text=True
@@ -158,7 +172,9 @@ gencode = next(line for line in header if "Protobuf Python Version" in line)
             f"generator: grpcio-tools {tools_version}",
             gencode.lstrip("# ").strip(),
             "license: MIT (see LICENSE)",
-            "Supporting google.api and google.rpc stubs are under ../google (Apache-2.0).",
+            "Service stubs omit google.api, yandex.cloud.operation, and yandex.cloud.validation.",
+            "Those filenames are registered by yandexcloud; a second copy collides in the",
+            "process-wide protobuf descriptor pool.",
             "Imports are rewritten to be relative so they resolve inside this component",
             "and do not shadow a top-level yandex package.",
             "",
@@ -192,5 +208,5 @@ print("Imports OK")
 print(f"cloudapi {commit}")
 PY
 
-echo "Stubs copied to custom_components/yandex_speechkit/{yandex,google}."
+echo "Stubs copied to custom_components/yandex_speechkit/yandex."
 echo "Review the diff before committing."

@@ -3,6 +3,7 @@
   "name": "Yandex SpeechKit",
   "codeowners": ["@black-roland"],
   "config_flow": true,
+  "dependencies": ["stt", "tts"],
   "documentation": "https://github.com/black-roland/homeassistant-yandex-speechkit#README",
   "integration_type": "service",
   "iot_class": "cloud_push",

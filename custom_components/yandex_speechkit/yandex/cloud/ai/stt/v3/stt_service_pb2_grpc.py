@@ -3,10 +3,7 @@
 import grpc
 import warnings
 
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from . import stt_pb2 as yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2
-from . import stt_service_pb2 as yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__service__pb2
-from ....operation import operation_pb2 as yandex_dot_cloud_dot_operation_dot_operation__pb2
 
 GRPC_GENERATED_VERSION = '1.83.1'
 GRPC_VERSION = grpc.__version__
@@ -29,8 +26,7 @@ if _version_not_supported:
 
 
 class RecognizerStub:
-    """A set of methods for streaming speech recognition.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -46,12 +42,10 @@ class RecognizerStub:
 
 
 class RecognizerServicer:
-    """A set of methods for streaming speech recognition.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def RecognizeStreaming(self, request_iterator, context):
-        """Performs bidirectional streaming speech recognition receiving results while sending audio.
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -73,8 +67,7 @@ def add_RecognizerServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Recognizer:
-    """A set of methods for streaming speech recognition.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def RecognizeStreaming(request_iterator,
@@ -93,170 +86,6 @@ class Recognizer:
             '/speechkit.stt.v3.Recognizer/RecognizeStreaming',
             yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.StreamingRequest.SerializeToString,
             yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.StreamingResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-
-class AsyncRecognizerStub:
-    """A set of methods for asynchronous speech recognition: recognize pre-recorded audio and receive results by request.
-    """
-
-    def __init__(self, channel):
-        """Constructor.
-
-        Args:
-            channel: A grpc.Channel.
-        """
-        self.RecognizeFile = channel.unary_unary(
-                '/speechkit.stt.v3.AsyncRecognizer/RecognizeFile',
-                request_serializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.RecognizeFileRequest.SerializeToString,
-                response_deserializer=yandex_dot_cloud_dot_operation_dot_operation__pb2.Operation.FromString,
-                _registered_method=True)
-        self.GetRecognition = channel.unary_stream(
-                '/speechkit.stt.v3.AsyncRecognizer/GetRecognition',
-                request_serializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__service__pb2.GetRecognitionRequest.SerializeToString,
-                response_deserializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.StreamingResponse.FromString,
-                _registered_method=True)
-        self.DeleteRecognition = channel.unary_unary(
-                '/speechkit.stt.v3.AsyncRecognizer/DeleteRecognition',
-                request_serializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.DeleteRecognitionRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
-
-
-class AsyncRecognizerServicer:
-    """A set of methods for asynchronous speech recognition: recognize pre-recorded audio and receive results by request.
-    """
-
-    def RecognizeFile(self, request, context):
-        """Performs asynchronous speech recognition.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetRecognition(self, request, context):
-        """Gets results of asynchronous recognition after finishing the operation.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteRecognition(self, request, context):
-        """Deletes results of asynchronous recognition by operation ID.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-
-def add_AsyncRecognizerServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-            'RecognizeFile': grpc.unary_unary_rpc_method_handler(
-                    servicer.RecognizeFile,
-                    request_deserializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.RecognizeFileRequest.FromString,
-                    response_serializer=yandex_dot_cloud_dot_operation_dot_operation__pb2.Operation.SerializeToString,
-            ),
-            'GetRecognition': grpc.unary_stream_rpc_method_handler(
-                    servicer.GetRecognition,
-                    request_deserializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__service__pb2.GetRecognitionRequest.FromString,
-                    response_serializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.StreamingResponse.SerializeToString,
-            ),
-            'DeleteRecognition': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteRecognition,
-                    request_deserializer=yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.DeleteRecognitionRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-            'speechkit.stt.v3.AsyncRecognizer', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('speechkit.stt.v3.AsyncRecognizer', rpc_method_handlers)
-
-
- # This class is part of an EXPERIMENTAL API.
-class AsyncRecognizer:
-    """A set of methods for asynchronous speech recognition: recognize pre-recorded audio and receive results by request.
-    """
-
-    @staticmethod
-    def RecognizeFile(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/speechkit.stt.v3.AsyncRecognizer/RecognizeFile',
-            yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.RecognizeFileRequest.SerializeToString,
-            yandex_dot_cloud_dot_operation_dot_operation__pb2.Operation.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def GetRecognition(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(
-            request,
-            target,
-            '/speechkit.stt.v3.AsyncRecognizer/GetRecognition',
-            yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__service__pb2.GetRecognitionRequest.SerializeToString,
-            yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.StreamingResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def DeleteRecognition(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/speechkit.stt.v3.AsyncRecognizer/DeleteRecognition',
-            yandex_dot_cloud_dot_ai_dot_stt_dot_v3_dot_stt__pb2.DeleteRecognitionRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,

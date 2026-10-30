@@ -26,8 +26,7 @@ if _version_not_supported:
 
 
 class SynthesizerStub:
-    """A set of methods for voice synthesis.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -48,19 +47,16 @@ class SynthesizerStub:
 
 
 class SynthesizerServicer:
-    """A set of methods for voice synthesis.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def UtteranceSynthesis(self, request, context):
-        """Synthesizing text into speech.
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def StreamSynthesis(self, request_iterator, context):
-        """Bidirectional streaming RPC for real-time synthesis.
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -87,8 +83,7 @@ def add_SynthesizerServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Synthesizer:
-    """A set of methods for voice synthesis.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def UtteranceSynthesis(request,
