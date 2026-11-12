@@ -12,6 +12,13 @@ DOMAIN = "yandex_speechkit"
 LOGGER = logging.getLogger(__package__)
 
 
+def speechkit_language(language: str) -> str:
+    """Return the SpeechKit language code for a Home Assistant language."""
+    if language in ("ru", "ru-RU"):
+        return "ru-RU"
+    return language
+
+
 # https://yandex.cloud/ru/docs/speechkit/stt/models
 STT_LANGUAGES = [
     "auto",
@@ -27,7 +34,7 @@ STT_LANGUAGES = [
     "pl-PL",
     "pt-PT",
     "pt-BR",
-    "ru-RU",
+    "ru",
     "sv-SE",
     "tr-TR",
     "uz-UZ",
@@ -60,7 +67,9 @@ TTS_VOICES = {
     "uz-UZ": ["nigora", "lola", "yulduz"],
 }
 
-TTS_LANGUAGES = list(TTS_VOICES.keys())
+TTS_LANGUAGES = [
+    "ru" if lang == "ru-RU" else lang for lang in TTS_VOICES
+]
 
 TTS_OUTPUT_CONTAINERS = {
     "wav": ContainerAudio.WAV,
@@ -79,6 +88,6 @@ CONF_PROXY_MEDIA_TYPE = "proxy_media_type"
 SECTION_TTS = "tts_section"
 SECTION_PROXY = "proxy_section"
 
-DEFAULT_LANG = "ru-RU"
+DEFAULT_LANG = "ru"
 DEFAULT_VOICE = "marina"
 DEFAULT_OUTPUT_CONTAINER = "mp3"

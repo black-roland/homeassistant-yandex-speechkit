@@ -46,6 +46,7 @@ from .const import (
     TTS_LANGUAGES,
     TTS_OUTPUT_CONTAINERS,
     TTS_VOICES,
+    speechkit_language,
 )
 from .yandex.cloud.ai.tts.v3 import tts_pb2
 from .yandex.cloud.ai.tts.v3 import tts_service_pb2_grpc
@@ -107,7 +108,7 @@ class YandexSpeechKitTTSEntity(TextToSpeechEntity):
     @callback
     def async_get_supported_voices(self, language: str) -> list[Voice] | None:
         """Return a list of supported voices for a language."""
-        if not (voices := TTS_VOICES.get(language)):
+        if not (voices := TTS_VOICES.get(speechkit_language(language))):
             return None
         return [Voice(voice, voice) for voice in voices]
 
