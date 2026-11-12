@@ -24,7 +24,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, LOGGER, STT_LANGUAGES
+from .const import DOMAIN, LOGGER, STT_LANGUAGES, speechkit_language
 from .yandex.cloud.ai.stt.v3 import stt_pb2
 from .yandex.cloud.ai.stt.v3 import stt_service_pb2_grpc
 
@@ -165,7 +165,7 @@ class YandexSpeechKitSTTEntity(SpeechToTextEntity):
                 ),
                 language_restriction=stt_pb2.LanguageRestrictionOptions(
                     restriction_type=stt_pb2.LanguageRestrictionOptions.WHITELIST,
-                    language_code=[metadata.language],
+                    language_code=[speechkit_language(metadata.language)],
                 ),
                 audio_processing_type=stt_pb2.RecognitionModelOptions.REAL_TIME,
             )
